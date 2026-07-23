@@ -29,15 +29,11 @@ jobs:
       - name: Update Xcode Project & Podfile Deployment Target to 15.0
         run: |
           cd AUVc-files/ios/App
-          
-          # Force the App.xcodeproj deployment target to iOS 15.0
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' App.xcodeproj/project.pbxproj
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.0;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' App.xcodeproj/project.pbxproj
 
-          # Clean lock files
           rm -rf Podfile.lock Pods/
           
-          # Re-write Podfile for iOS 15.0
           cat << 'EOF' > Podfile
           platform :ios, '15.0'
           use_frameworks!
@@ -69,17 +65,19 @@ jobs:
                      CODE_SIGNING_REQUIRED=NO \
                      CODE_SIGNING_ALLOWED=NO
 
-      - name: Export Unsigned IPA Package
+      - name: Generate Unsigned IPA Manually
         run: |
           cd AUVc-files/ios/App
-          xcodebuild -exportArchive \
-                     -archivePath build/App.xcarchive \
-                     -exportPath build/ipa \
-                     -exportOptionsPlist ExportOptions.plist \
-                     -allowProvisioningUpdates || true
+          mkdir -p build/ipa/Payload
+          # Move the built app binary into the Payload directory to package it as an IPA
+          mv build/App.xcarchive/Products/Applications/App.app build/ipa/Payload/
+          cd build/ipa
+          zip -r AUVc.zip Payload
+          mv AUVc.zip AUVc.ipa
+          rm -rf Payload
 
       - name: Upload Artifact IPA
         uses: actions/upload-artifact@v4
         with:
           name: AUVc-iOS-Build
-          path: AUVc-files/ios/App/build/ipa/*.ipa
+          path: AUVc-files/ios/App/build/ipa/AUVc.ipa
