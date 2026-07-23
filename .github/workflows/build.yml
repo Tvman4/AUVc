@@ -24,16 +24,17 @@ jobs:
           npm install
           npm install @capacitor/core @capacitor/cli @capacitor/ios
           npx cap init AUVc com.austuff.auvc --web-dir public
-          
-          # Add ios platform, allowing the initial pod install to fail silently, 
-          # because we will immediately overwrite the Podfile and run it correctly right after.
           npx cap add ios || true
 
       - name: Fix Podfile Target and Run Pod Install Properly
         run: |
           cd AUVc-files/ios/App
+          # Clear existing pod lock files and cache fragments that cause version sticking
+          rm -rf Podfile.lock Pods/
+          
           cat << 'EOF' > Podfile
-          platform :ios, '14.0'
+          # Require iOS 15.0 to fully satisfy modern Capacitor packages
+          platform :ios, '15.0'
           use_frameworks!
 
           target 'App' do
@@ -41,6 +42,8 @@ jobs:
             pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
           end
           EOF
+          
+          pod cache clean --all || true
           pod install --repo-update
 
       - name: Set up Xcode
