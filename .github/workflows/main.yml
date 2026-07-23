@@ -1,0 +1,5 @@
+      - name: Add Microphone Permission to Info.plist
+        run: |
+          PLIST="ios/App/App/Info.plist"
+          /usr/libexec/PlistBuddy -c "Add :NSMicrophoneUsageDescription string 'We need access to your microphone for Among Us proximity voice chat.'" "$PLIST" || \
+          /usr/libexec/PlistBuddy -c "Set :NSMicrophoneUsageDescription 'We need access to your microphone for Among Us proximity voice chat.'" "$PLIST"
