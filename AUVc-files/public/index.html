@@ -2,45 +2,140 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Among Us VoiceChat (AUVc)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Among Us Voice Chat - iOS</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b0b0c; color: #f5f5f7; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; height: 100vh; box-sizing: border-box; }
-        .card { background: #1c1c1e; padding: 24px; border-radius: 16px; width: 100%; max-width: 380px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
-        h2 { text-align: center; margin-top: 0; color: #fff; font-size: 22px; }
-        input, button { width: 100%; padding: 14px; margin-top: 12px; border-radius: 10px; border: none; font-size: 16px; box-sizing: border-box; outline: none; }
-        input { background: #2c2c2e; color: #fff; border: 1px solid #3a3a3c; }
-        input::placeholder { color: #8e8e93; }
-        button { background: #0a84ff; color: #fff; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-        button:active { background: #0062cc; }
-        .status-box { margin-top: 16px; font-size: 13px; color: #8e8e93; text-align: center; }
-        .hidden { display: none !important; }
-        .info-text { font-size: 14px; color: #aeaeb2; margin: 8px 0; text-align: center; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .card {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 400px;
+            margin: 0 auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background-color: #2a2a2a;
+            color: white;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007aff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+        }
+        button.host {
+            background-color: #34c759;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .hidden {
+            display: none;
+        }
+        .error {
+            color: #ff3b30;
+            font-size: 14px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
-
-    <div class="card">
-        <h2>AUVc - Among Us Voice</h2>
+    <!-- Setup Screen for iOS Host -->
+    <div class="card" id="setup-screen">
+        <h2>AUVc iOS Host</h2>
+        <p>Status: <span id="status" style="color: #ff3b30;">Disconnected</span></p>
         
-        <!-- Setup Screen -->
-        <div id="setup-screen">
-            <input type="text" id="username" placeholder="In-Game Username" autocomplete="off" />
-            <input type="text" id="roomCode" placeholder="6-Letter Room Code" maxlength="6" style="text-transform: uppercase;" autocomplete="off" />
-            <button onclick="initializeSession()">Connect Audio</button>
-        </div>
-
-        <!-- Active Session Screen -->
-        <div id="active-screen" class="hidden">
-            <p class="info-text">User: <span id="display-name" style="color: #0a84ff; font-weight: bold;"></span></p>
-            <p class="info-text">Lobby: <span id="display-room" style="font-weight: bold;"></span></p>
-            <button onclick="toggleMute()" id="mute-btn" style="background: #30d158;">Mute Mic</button>
-        </div>
-
-        <div class="status-box" id="status">Status: Ready to connect</div>
+        <input type="text" id="roomCode" placeholder="Enter Room Code (e.g. ABCDE)" required>
+        <button class="host" id="hostBtn">Start iOS Hosting</button>
+        <p id="errorMsg" class="error"></p>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js"></script>
+    <!-- Active Game Screen -->
+    <div class="card hidden" id="game-screen">
+        <h3>Hosting Room: <span id="activeRoom"></span></h3>
+        <p>Proximity Voice Chat Active</p>
+        <p>Connected Players: <span id="playerCount">0</span></p>
+    </div>
+
+    <!-- Include Socket.io client library via CDN -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+        // Replace with your cloud signaling server URL (e.g., Render or Glitch)
+        const SERVER_URL = 'https://your-backend-server-url.onrender.com';
+        let socket;
+        let localAudioStream = null;
+
+        document.getElementById('hostBtn').addEventListener('click', async () => {
+            const roomCode = document.getElementById('roomCode').value.trim().toUpperCase();
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.innerText = '';
+
+            if (!roomCode) {
+                errorMsg.innerText = 'Please enter a valid room code.';
+                return;
+            }
+
+            try {
+                // This explicitly prompts the user for microphone permissions on iOS
+                localAudioStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                console.log("Microphone access granted by iOS user.");
+                
+                // Initialize Socket.io connection after permission is given
+                connectToSignalingServer(roomCode);
+
+            } catch (err) {
+                console.error("Microphone permission error:", err);
+                errorMsg.innerText = 'Microphone permission is required to host voice chat.';
+            }
+        });
+
+        function connectToSignalingServer(roomCode) {
+            socket = io(SERVER_URL);
+
+            socket.on('connect', () => {
+                // Register this device as the host of the room
+                socket.emit('join-room', { 
+                    role: 'host', 
+                    room: roomCode 
+                });
+            });
+
+            socket.on('room-joined', () => {
+                document.getElementById('setup-screen').classList.add('hidden');
+                document.getElementById('game-screen').classList.remove('hidden');
+                document.getElementById('activeRoom').innerText = roomCode;
+                document.getElementById('status').innerText = 'Connected';
+                document.getElementById('status').style.color = '#34c759';
+            });
+
+            socket.on('room-error', (msg) => {
+                document.getElementById('errorMsg').innerText = msg;
+                socket.disconnect();
+            });
+
+            socket.on('disconnect', () => {
+                document.getElementById('status').innerText = 'Disconnected';
+                document.getElementById('status').style.color = '#ff3b30';
+            });
+        }
+    </script>
 </body>
 </html>
