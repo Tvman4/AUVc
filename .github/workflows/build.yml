@@ -18,16 +18,20 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Initialize Capacitor, Add iOS, and Fix Pods
+      - name: Setup Capacitor and iOS Platform Safely
         run: |
           cd AUVc-files
           npm install
           npm install @capacitor/core @capacitor/cli @capacitor/ios
           npx cap init AUVc com.austuff.auvc --web-dir public
-          npx cap add ios
           
-          # Now that the ios folder exists, overwrite the Podfile with iOS 14.0 target and re-run pods
-          cd ios/App
+          # Add ios platform, allowing the initial pod install to fail silently, 
+          # because we will immediately overwrite the Podfile and run it correctly right after.
+          npx cap add ios || true
+
+      - name: Fix Podfile Target and Run Pod Install Properly
+        run: |
+          cd AUVc-files/ios/App
           cat << 'EOF' > Podfile
           platform :ios, '14.0'
           use_frameworks!
