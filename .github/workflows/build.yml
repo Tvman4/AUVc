@@ -21,12 +21,12 @@ jobs:
 
       - name: Install Dependencies & Build Web Assets
         run: |
+          cd AUVc-files
           npm install
-          npm run build
 
       - name: Install CocoaPods
         run: |
-          cd ios/App
+          cd AUVc-files/ios/App
           pod install
 
       - name: Set up Xcode
@@ -36,7 +36,7 @@ jobs:
 
       - name: Build and Archive iOS App
         run: |
-          cd ios/App
+          cd AUVc-files/ios/App
           xcodebuild -workspace App.xcworkspace \
                      -scheme App \
                      -configuration Release \
@@ -48,7 +48,7 @@ jobs:
 
       - name: Export Unsigned IPA Package
         run: |
-          cd ios/App
+          cd AUVc-files/ios/App
           xcodebuild -exportArchive \
                      -archivePath build/App.xcarchive \
                      -exportPath build/ipa \
@@ -59,4 +59,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: AUVc-iOS-Build
-          path: ios/App/build/ipa/*.ipa
+          path: AUVc-files/ios/App/build/ipa/*.ipa
