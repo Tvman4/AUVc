@@ -22,11 +22,8 @@ jobs:
         run: |
           cd AUVc-files
           npm install
-          # Automatically install Capacitor CLI and Core if not present
-          npm install @capacitor/core @capacitor/cli
-          # Initialize capacitor configuration non-interactively if missing
-          npx cap init AUVc com.austuff.auvc --web-dir public --yes || true
-          # Add the native iOS platform template dynamically
+          npm install @capacitor/core @capacitor/cli @capacitor/ios
+          npx cap init AUVc com.austuff.auvc --web-dir public
           npx cap add ios
 
       - name: Install CocoaPods
