@@ -23,10 +23,18 @@ jobs:
           cd AUVc-files
           npm install
 
-      - name: Install CocoaPods
+      - name: Locate and Setup iOS Project
         run: |
-          cd AUVc-files/ios/App
-          pod install
+          cd AUVc-files
+          # Check if ios folder exists, if not list contents to debug
+          if [ -d "ios/App" ]; then
+            cd ios/App
+            pod install
+          else
+            echo "iOS directory not found at ios/App. Listing current files:"
+            ls -R
+            exit 1
+          fi
 
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
