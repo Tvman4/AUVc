@@ -18,23 +18,21 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Dependencies & Build Web Assets
+      - name: Install Dependencies & Setup Capacitor iOS
         run: |
           cd AUVc-files
           npm install
+          # Automatically install Capacitor CLI and Core if not present
+          npm install @capacitor/core @capacitor/cli
+          # Initialize capacitor configuration non-interactively if missing
+          npx cap init AUVc com.austuff.auvc --web-dir public --yes || true
+          # Add the native iOS platform template dynamically
+          npx cap add ios
 
-      - name: Locate and Setup iOS Project
+      - name: Install CocoaPods
         run: |
-          cd AUVc-files
-          # Check if ios folder exists, if not list contents to debug
-          if [ -d "ios/App" ]; then
-            cd ios/App
-            pod install
-          else
-            echo "iOS directory not found at ios/App. Listing current files:"
-            ls -R
-            exit 1
-          fi
+          cd AUVc-files/ios/App
+          pod install
 
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
