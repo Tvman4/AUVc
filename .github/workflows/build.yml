@@ -29,11 +29,9 @@ jobs:
       - name: Fix Podfile Target and Run Pod Install Properly
         run: |
           cd AUVc-files/ios/App
-          # Clear existing pod lock files and cache fragments that cause version sticking
           rm -rf Podfile.lock Pods/
           
           cat << 'EOF' > Podfile
-          # Require iOS 15.0 to fully satisfy modern Capacitor packages
           platform :ios, '15.0'
           use_frameworks!
 
@@ -49,7 +47,7 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '15.0'
+          xcode-version: 'latest-stable'
 
       - name: Build and Archive iOS App
         run: |
