@@ -32,6 +32,7 @@ jobs:
           rm -rf Podfile.lock Pods/
           
           cat << 'EOF' > Podfile
+          # Match Capacitor 15.0 minimum requirement completely
           platform :ios, '15.0'
           use_frameworks!
 
