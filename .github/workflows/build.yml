@@ -26,13 +26,19 @@ jobs:
           npx cap init AUVc com.austuff.auvc --web-dir public
           npx cap add ios || true
 
-      - name: Fix Podfile Target and Run Pod Install Properly
+      - name: Update Xcode Project & Podfile Deployment Target to 15.0
         run: |
           cd AUVc-files/ios/App
+          
+          # Force the App.xcodeproj deployment target to iOS 15.0
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' App.xcodeproj/project.pbxproj
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.0;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' App.xcodeproj/project.pbxproj
+
+          # Clean lock files
           rm -rf Podfile.lock Pods/
           
+          # Re-write Podfile for iOS 15.0
           cat << 'EOF' > Podfile
-          # Match Capacitor 15.0 minimum requirement completely
           platform :ios, '15.0'
           use_frameworks!
 
@@ -57,6 +63,7 @@ jobs:
                      -scheme App \
                      -configuration Release \
                      -archivePath build/App.xcarchive \
+                     IPHONEOS_DEPLOYMENT_TARGET=15.0 \
                      archive \
                      CODE_SIGN_IDENTITY="" \
                      CODE_SIGNING_REQUIRED=NO \
