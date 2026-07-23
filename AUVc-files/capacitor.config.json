@@ -1,0 +1,6 @@
+{
+  "appId": "com.austuff.auvc",
+  "appName": "AUVc",
+  "webDir": "public",
+  "bundledWebRuntime": false
+}
