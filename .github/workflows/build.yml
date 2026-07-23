@@ -24,10 +24,9 @@ jobs:
           npm install
           npm install @capacitor/core @capacitor/cli @capacitor/ios
           npx cap init AUVc com.austuff.auvc --web-dir public
-          # Use --no-deps to prevent it from running pod install prematurely
-          npx cap add ios --no-deps
+          npx cap add ios
 
-      - name: Fix iOS Deployment Target & Install CocoaPods
+      - name: Fix iOS Deployment Target & Re-run Pods
         run: |
           cd AUVc-files/ios/App
           cat << 'EOF' > Podfile
@@ -39,7 +38,7 @@ jobs:
             pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
           end
           EOF
-          pod install
+          pod install --repo-update
 
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
