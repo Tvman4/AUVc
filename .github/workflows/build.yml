@@ -26,9 +26,11 @@ jobs:
           npx cap init AUVc com.austuff.auvc --web-dir public
           npx cap add ios
 
-      - name: Install CocoaPods
+      - name: Fix iOS Deployment Target & Install CocoaPods
         run: |
           cd AUVc-files/ios/App
+          # Force the minimum deployment target to iOS 14.0 inside the Podfile to satisfy Capacitor requirements
+          sed -i '' "s/platform :ios, '.*'/platform :ios, '14.0'/" Podfile || echo "platform :ios, '14.0'" >> Podfile
           pod install
 
       - name: Set up Xcode
