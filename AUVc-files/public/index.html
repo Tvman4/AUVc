@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Among Us VoiceChat (AUVc)</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b0b0c; color: #f5f5f7; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; height: 100vh; box-sizing: border-box; }
+        .card { background: #1c1c1e; padding: 24px; border-radius: 16px; width: 100%; max-width: 380px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
+        h2 { text-align: center; margin-top: 0; color: #fff; font-size: 22px; }
+        input, button { width: 100%; padding: 14px; margin-top: 12px; border-radius: 10px; border: none; font-size: 16px; box-sizing: border-box; outline: none; }
+        input { background: #2c2c2e; color: #fff; border: 1px solid #3a3a3c; }
+        input::placeholder { color: #8e8e93; }
+        button { background: #0a84ff; color: #fff; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        button:active { background: #0062cc; }
+        .status-box { margin-top: 16px; font-size: 13px; color: #8e8e93; text-align: center; }
+        .hidden { display: none !important; }
+        .info-text { font-size: 14px; color: #aeaeb2; margin: 8px 0; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>AUVc - Among Us Voice</h2>
+        
+        <!-- Setup Screen -->
+        <div id="setup-screen">
+            <input type="text" id="username" placeholder="In-Game Username" autocomplete="off" />
+            <input type="text" id="roomCode" placeholder="6-Letter Room Code" maxlength="6" style="text-transform: uppercase;" autocomplete="off" />
+            <button onclick="initializeSession()">Connect Audio</button>
+        </div>
+
+        <!-- Active Session Screen -->
+        <div id="active-screen" class="hidden">
+            <p class="info-text">User: <span id="display-name" style="color: #0a84ff; font-weight: bold;"></span></p>
+            <p class="info-text">Lobby: <span id="display-room" style="font-weight: bold;"></span></p>
+            <button onclick="toggleMute()" id="mute-btn" style="background: #30d158;">Mute Mic</button>
+        </div>
+
+        <div class="status-box" id="status">Status: Ready to connect</div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
