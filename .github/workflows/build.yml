@@ -29,8 +29,22 @@ jobs:
       - name: Fix iOS Deployment Target & Install CocoaPods
         run: |
           cd AUVc-files/ios/App
-          # Force the minimum deployment target to iOS 14.0 inside the Podfile to satisfy Capacitor requirements
-          sed -i '' "s/platform :ios, '.*'/platform :ios, '14.0'/" Podfile || echo "platform :ios, '14.0'" >> Podfile
+          # Explicitly overwrite Podfile to force iOS 14.0 target for Capacitor compatibility
+          cat << 'EOF' > Podfile
+          # Uncomment the next line to define a global platform for your project
+          platform :ios, '14.0'
+
+          use_frameworks!
+
+          # Uncomment the next line if you're using Swift or would like to use dynamic frameworks
+          # use_frameworks!
+
+          target 'App' do
+            # Pods for App
+            pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
+            pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+          end
+          EOF
           pod install
 
       - name: Set up Xcode
